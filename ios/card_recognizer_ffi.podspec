@@ -19,6 +19,11 @@ A new Flutter project.
   # `../src/*` so that the C sources can be shared among all target platforms.
   s.source           = { :path => '.' }
   s.source_files = 'Classes/**/*'
+
+  s.vendored_libraries = 'Libraries/libopencv_core.a', 'Libraries/libopencv_hal.a', 'Libraries/libopencv_imgproc.a', 'Libraries/libopencv_objdetect.a'
+
+
+
   s.dependency 'Flutter'
   s.platform = :ios, '12.0'
 
