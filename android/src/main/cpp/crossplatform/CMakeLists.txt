@@ -1,27 +1,27 @@
 cmake_minimum_required(VERSION 3.5)
 
+set(CROSS_PLATFORM_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../../../../../src/CrossPlatform")
+
 add_library(crossplatform STATIC
-        CrossPlatform/CaffePredictor/CaffeDatum.cpp
-        CrossPlatform/CaffePredictor/CaffeDatumList.cpp
-        CrossPlatform/CaffePredictor/CaffeNeuralNetwork.cpp
-        CrossPlatform/CaffePredictor/CaffeObjectFactory.cpp
-        CrossPlatform/CaffePredictor/CaffeResult.cpp
-        CrossPlatform/CaffePredictor/CaffeResultList.cpp
-        CrossPlatform/CV/canny.cpp
-        CrossPlatform/CV/hough.cpp
-        CrossPlatform/CV/warp.cpp
-        CrossPlatform/Recognizer/DateRecognizer.cpp
-        CrossPlatform/Recognizer/EdgesDetector.cpp
-        CrossPlatform/Recognizer/FrameStorage.cpp
-        CrossPlatform/Recognizer/NameRecognizer.cpp
-        CrossPlatform/Recognizer/NumberRecognizer.cpp
-        CrossPlatform/Recognizer/RecognitionCore.cpp
-        CrossPlatform/Recognizer/RecognitionResult.cpp
-        CrossPlatform/Recognizer/Utils.cpp
-        CrossPlatform/ServiceContainer.cpp
-        CrossPlatform/Torch/TorchManager.cpp
-        jniImpl/RecognitionCoreDelegate.cpp
-        jniImpl/TorchDelegate.cpp
+        ${CROSS_PLATFORM_DIR}/CaffePredictor/CaffeDatum.cpp
+        ${CROSS_PLATFORM_DIR}/CaffePredictor/CaffeDatumList.cpp
+        ${CROSS_PLATFORM_DIR}/CaffePredictor/CaffeNeuralNetwork.cpp
+        ${CROSS_PLATFORM_DIR}/CaffePredictor/CaffeObjectFactory.cpp
+        ${CROSS_PLATFORM_DIR}/CaffePredictor/CaffeResult.cpp
+        ${CROSS_PLATFORM_DIR}/CaffePredictor/CaffeResultList.cpp
+        ${CROSS_PLATFORM_DIR}/CV/canny.cpp
+        ${CROSS_PLATFORM_DIR}/CV/hough.cpp
+        ${CROSS_PLATFORM_DIR}/CV/warp.cpp
+        ${CROSS_PLATFORM_DIR}/Recognizer/DateRecognizer.cpp
+        ${CROSS_PLATFORM_DIR}/Recognizer/EdgesDetector.cpp
+        ${CROSS_PLATFORM_DIR}/Recognizer/FrameStorage.cpp
+        ${CROSS_PLATFORM_DIR}/Recognizer/NameRecognizer.cpp
+        ${CROSS_PLATFORM_DIR}/Recognizer/NumberRecognizer.cpp
+        ${CROSS_PLATFORM_DIR}/Recognizer/RecognitionCore.cpp
+        ${CROSS_PLATFORM_DIR}/Recognizer/RecognitionResult.cpp
+        ${CROSS_PLATFORM_DIR}/Recognizer/Utils.cpp
+        ${CROSS_PLATFORM_DIR}/ServiceContainer.cpp
+        ${CROSS_PLATFORM_DIR}/Torch/TorchManager.cpp
         )
 
 find_package(OpenCV REQUIRED
@@ -40,17 +40,16 @@ target_compile_options(crossplatform PRIVATE
 target_include_directories(crossplatform
         PUBLIC
         ${CMAKE_CURRENT_SOURCE_DIR}
-        CrossPlatform
-        CrossPlatform/CaffePredictor
-        CrossPlatform/CV
-        CrossPlatform/Include
-        CrossPlatform/Include/NeuralNetwork
-        CrossPlatform/Include/Public
-        CrossPlatform/Include/Recognizer
-        CrossPlatform/Include/Torch
-        CrossPlatform/Recognizer
-        CrossPlatform/Torch
-        jniImpl)
+        ${CROSS_PLATFORM_DIR}
+        ${CROSS_PLATFORM_DIR}/CaffePredictor
+        ${CROSS_PLATFORM_DIR}/CV
+        ${CROSS_PLATFORM_DIR}/Include
+        ${CROSS_PLATFORM_DIR}/Include/NeuralNetwork
+        ${CROSS_PLATFORM_DIR}/Include/Public
+        ${CROSS_PLATFORM_DIR}/Include/Recognizer
+        ${CROSS_PLATFORM_DIR}/Include/Torch
+        ${CROSS_PLATFORM_DIR}/Recognizer
+        ${CROSS_PLATFORM_DIR}/Torch)
 
 if (ANDROID_ABI STREQUAL "armeabi-v7a")
     set_property(TARGET crossplatform APPEND_STRING PROPERTY COMPILE_FLAGS " -mfpu=neon")
