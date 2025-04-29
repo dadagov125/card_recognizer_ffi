@@ -33,8 +33,8 @@ if (ANDROID)
 endif()
 
 target_link_libraries(card_recognizer_ffi PRIVATE
+    crossplatform
     libyuv
     log
     z
-    -lc++_shared
 )
