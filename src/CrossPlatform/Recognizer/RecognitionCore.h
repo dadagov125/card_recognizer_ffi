@@ -11,6 +11,8 @@
 
 
 #include <atomic>
+#include <condition_variable>
+#include <mutex>
 #include "IRecognitionCore.h"
 #include "IFrameStorage.h"
 #include "IRecognitionCoreDelegate.h"
@@ -29,7 +31,7 @@ class CRecognitionCore : public IRecognitionCore
 {
     
 public:
-    CRecognitionCore(const shared_ptr<IRecognitionCoreDelegate>& delegate, const shared_ptr<ITorchDelegate>& torchDelegate, int bytesPerRow);
+    CRecognitionCore(const shared_ptr<IRecognitionCoreDelegate>& delegate, const shared_ptr<ITorchDelegate>& torchDelegate);
     
     virtual ~CRecognitionCore();
     
@@ -105,8 +107,11 @@ private:
     weak_ptr<ITorchManager> _torchManager;
     
     atomic<bool> _isIdle;
-    atomic<bool> _isBusy;
-    
+
+    std::mutex _isBusyMutex;
+    std::condition_variable _isBusyVar;
+    bool _isBusy;
+
     cv::Mat _currentFrame;
     vector<ParametricLine> _edges;
     size_t _bufferSizeY;

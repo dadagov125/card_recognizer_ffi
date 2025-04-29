@@ -14,7 +14,7 @@ EXTERNAL SOURCES:
     :path: Flutter
 
 SPEC CHECKSUMS:
-  card_recognizer_ffi: 0142244d27bd002c00fed76eb53c4b94e93199fd
+  card_recognizer_ffi: 687fca97c2ec4fd57d8de5838164b235eccb64bc
   Flutter: e0871f40cf51350855a761d2e70bf5af5b9b5de7
 
 PODFILE CHECKSUM: 4bb0d5af7b0a7a18570b26cd09a55bf9a905f81f

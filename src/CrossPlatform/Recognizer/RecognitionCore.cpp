@@ -7,6 +7,7 @@
 //
 
 #include <thread>
+#include <unistd.h>
 
 #include "RecognitionCore.h"
 #include "IServiceContainer.h"
@@ -27,30 +28,25 @@ static int dateRecognitionAttemptsCount = 0;
 
 bool IRecognitionCore::GetInstance(shared_ptr<IRecognitionCore> &recognitionCore,
                                    const shared_ptr<IRecognitionCoreDelegate>& recognitionDelegate,
-                                   const shared_ptr<ITorchDelegate>& torchDelegate, int bytesPerRow)
+                                   const shared_ptr<ITorchDelegate>& torchDelegate)
 {
-    recognitionCore = make_shared<CRecognitionCore>(recognitionDelegate, torchDelegate, bytesPerRow);
+    recognitionCore = make_shared<CRecognitionCore>(recognitionDelegate, torchDelegate);
     return recognitionCore != 0;
 }
 
-CRecognitionCore::CRecognitionCore(const shared_ptr<IRecognitionCoreDelegate>& delegate, const shared_ptr<ITorchDelegate>& torchDelegate, int bytesPerRow) : _delegate(delegate), _orientation(PayCardsRecognizerOrientationPortrait), _mode(PayCardsRecognizerModeNone), _deployed(false)
+CRecognitionCore::CRecognitionCore(const shared_ptr<IRecognitionCoreDelegate>& delegate, const shared_ptr<ITorchDelegate>& torchDelegate) : _delegate(delegate), _orientation(PayCardsRecognizerOrientationPortrait), _mode(PayCardsRecognizerModeNone), _deployed(false)
 {
     _isIdle.store(false);
-    _isBusy.store(false);
-    
+    _isBusy = false;
+
     IServiceContainerFactory::CreateServiceContainer(_serviceContainerPtr);
-    
+
     _serviceContainerPtr->Initialize();
     _frameStorage = _serviceContainerPtr->resolve<IFrameStorage>();
-    
-    if(auto frameStorage = _frameStorage.lock()) {
-        frameStorage->SetBytesPerRow(bytesPerRow);
-    }
-    
     _edgesDetector = _serviceContainerPtr->resolve<IEdgesDetector>();
     _recognitionResult = _serviceContainerPtr->resolve<IRecognitionResult>();
     _torchManager = _serviceContainerPtr->resolve<ITorchManager>();
-    
+
     if(auto torchManager = _torchManager.lock()) {
         torchManager->SetDelegate(torchDelegate);
     }
@@ -90,22 +86,22 @@ void CRecognitionCore::SetRecognitionMode(PayCardsRecognizerMode flag)
 void CRecognitionCore::Deploy()
 {
     if (_mode == PayCardsRecognizerModeNone) return;
-    
+
     if (auto numberRecognizer = _numberRecognizer.lock()) {
         numberRecognizer->SetDelegate(_delegate);
         if(!numberRecognizer->Deploy()) return;
     }
-    
+
     if (auto dateRecognizer = _dateRecognizer.lock()) {
         dateRecognizer->SetDelegate(_delegate);
         if(!dateRecognizer->Deploy()) return;
     }
-    
+
     if (auto nameRecognizer = _nameRecognizer.lock()) {
         nameRecognizer->SetDelegate(_delegate);
         if(!nameRecognizer->Deploy()) return;
     }
-    
+
     _deployed = true;
 }
 
@@ -119,7 +115,7 @@ cv::Rect CRecognitionCore::CalcWorkingArea(cv::Size frameSize, int captureAreaWi
     if(auto edgesDetector = _edgesDetector.lock()) {
         return edgesDetector->CalcWorkingArea(frameSize, captureAreaWidth, _orientation);
     }
-    
+
     return Rect(0,0,0,0);
 }
 
@@ -127,10 +123,13 @@ void CRecognitionCore::SetIdle(bool isIdle)
 {
     if (!isIdle) {
         if(auto recognitionResult = _recognitionResult.lock()) {
+            std::unique_lock<std::mutex> lock(_isBusyMutex);
+            while (_isBusy)
+                _isBusyVar.wait(lock);
             recognitionResult->Reset();
         }
     }
-    
+
     _isIdle.store(isIdle);
 }
 
@@ -142,6 +141,9 @@ bool CRecognitionCore::IsIdle() const
 void CRecognitionCore::ResetResult()
 {
     if(auto recognitionResult = _recognitionResult.lock()) {
+        std::unique_lock<std::mutex> lock(_isBusyMutex);
+        while (_isBusy)
+            _isBusyVar.wait(lock);
         recognitionResult->Reset();
     }
 }
@@ -284,32 +286,33 @@ void CRecognitionCore::ProcessFrame(DetectedLineFlags& edgeFlags, void* bufferY,
 {
     if (!IsIdle() && _deployed) {
 
-        int bytesPerRow = (int)bufferSizeY / 1280;
-        Mat frameMatY = cv::Mat(1280, bytesPerRow, CV_8UC1, bufferY); //put buffer in open cv, no memory copied
-        
+        Mat frameMatY = cv::Mat(1280, 720, CV_8UC1, bufferY); //put buffer in open cv, no memory copied
+
         if(auto edgesDetector = _edgesDetector.lock()) {
             if(auto recognitionResult = _recognitionResult.lock()) {
                 if(auto frameStorage = _frameStorage.lock()) {
-                    edgeFlags = edgesDetector->DetectEdges(frameMatY, _edges, _currentFrame);
+                    Mat bordersFrame;
+                    edgeFlags = edgesDetector->DetectEdges(frameMatY, _edges, bordersFrame);
                     if (edgeFlags&DetectedLineTopFlag &&  edgeFlags&DetectedLineBottomFlag
                         && edgeFlags&DetectedLineLeftFlag && edgeFlags&DetectedLineRightFlag) {
-                        if (!_isBusy.load()) {
-                            _isBusy.store(true);
-                            
+                        std::unique_lock<std::mutex> lock(_isBusyMutex);
+                        if (!_isBusy) {
+                            _isBusy = true;
                             _bufferSizeY = bufferSizeY;
                             if (!(recognitionResult->GetRecognitionStatus() & RecognitionStatusNumber)) {
                                 frameStorage->SetRawY(frameMatY.data, bufferUV, _edges, _orientation);
                             }
-                            
+                            bordersFrame.copyTo(_currentFrame);
+
                             std::thread thread;
                             thread = std::thread( [this] { this->ProcessFrameThreaded(); } );
-                            
+
                             sched_param sch;
                             int policy;
                             pthread_getschedparam(thread.native_handle(), &policy, &sch);
                             sch.sched_priority = 99;
                             pthread_setschedparam(thread.native_handle(), SCHED_FIFO, &sch);
-                            
+
                             thread.detach();
                         }
                     }
@@ -323,7 +326,9 @@ void CRecognitionCore::FinishRecognition()
 {
     if(auto frameStorage = _frameStorage.lock()) {
         frameStorage->PopFrame();
-        _isBusy.store(false);
+        std::unique_lock<std::mutex> lock(_isBusyMutex);
+        _isBusy = false;
+        _isBusyVar.notify_one();
     }
 }
 
@@ -334,7 +339,9 @@ void CRecognitionCore::ProcessFrameThreaded()
             Recognize();
         }
         else {
-            _isBusy.store(false);
+            std::unique_lock<std::mutex> lock(_isBusyMutex);
+            _isBusy = false;
+            _isBusyVar.notify_one();
         }
     }
 }
@@ -342,7 +349,7 @@ void CRecognitionCore::ProcessFrameThreaded()
 void CRecognitionCore::Recognize()
 {
     if (auto recognitionResult = _recognitionResult.lock()) {
-        
+
         // number
         if (_mode&PayCardsRecognizerModeNumber &&
             !(recognitionResult->GetRecognitionStatus()&RecognitionStatusNumber)) {
@@ -361,7 +368,7 @@ void CRecognitionCore::Recognize()
                 return;
             }
         }
-        
+
         if (_mode&PayCardsRecognizerModeDate || _mode&PayCardsRecognizerModeNumber) {
             _delegate->RecognitionDidFinish(recognitionResult, (PayCardsRecognizerMode)(PayCardsRecognizerModeNumber|PayCardsRecognizerModeDate));
 
@@ -378,7 +385,7 @@ void CRecognitionCore::Recognize()
             !(recognitionResult->GetRecognitionStatus() & RecognitionStatusName)) {
             RecognizeName();
         }
-        
+
         _delegate->RecognitionDidFinish(recognitionResult, PayCardsRecognizerModeName);
 
         _isIdle.store(true);
@@ -391,17 +398,17 @@ void CRecognitionCore::Recognize()
 bool CRecognitionCore::RecognizeName()
 {
     shared_ptr<INeuralNetworkResultList> result;
-    
+
     if(auto frameStorage = _frameStorage.lock()) {
         if(auto nameRecognizer = _nameRecognizer.lock()) {
             if(auto recognitionResult = _recognitionResult.lock()) {
                 Mat frame;
                 frameStorage->GetCurrentFrame(frame);
-                
+
                 vector<cv::Mat> samples;
                 std::string postprocessedName = "";
                 result = nameRecognizer->Process(frame, samples, postprocessedName);
-                
+
                 if (result) {
                     recognitionResult->SetNameResult(result);
                     recognitionResult->SetPostprocessedName(postprocessedName);
@@ -409,7 +416,7 @@ bool CRecognitionCore::RecognizeName()
             }
         }
     }
-    
+
     return result != nullptr;
 }
 
@@ -417,7 +424,7 @@ bool CRecognitionCore::RecognizeNumber()
 {
     cv::Rect boundingRect;
     shared_ptr<INeuralNetworkResultList> result;
-    
+
     if(auto frameStorage = _frameStorage.lock()) {
         if(auto numberRecognizer = _numberRecognizer.lock()) {
             if(auto recognitionResult = _recognitionResult.lock()) {
@@ -448,10 +455,10 @@ bool CRecognitionCore::RecognizeDate()
             if(auto recognitionResult = _recognitionResult.lock()) {
                 Mat frame;
                 frameStorage->GetCurrentFrame(frame);
-                
+
                 vector<cv::Mat> samples;
                 result = dateRecognizer->Process(frame, samples, boundingRect);
-                
+
                 dateRecognitionAttemptsCount++;
                 if (result) {
                     _isIdle.store(true);
@@ -461,7 +468,7 @@ bool CRecognitionCore::RecognizeDate()
             }
         }
     }
-    
+
     return result != nullptr;
 }
 
@@ -476,25 +483,24 @@ void CRecognitionCore::SetTorchStatus(bool status)
 cv::Mat CRecognitionCore::CaptureView()
 {
     Mat normalizedMat;
-    
+
     if(auto frameStorage = _frameStorage.lock()) {
         if(auto edgesDetector = _edgesDetector.lock()) {
-            const size_t bytesPerRow = (int)_bufferSizeY / 1280;
-            const size_t bufferLen = bytesPerRow * 1280 * 3 / 2 ;
+            size_t bufferLen = 720 * 1280 * 3 / 2 ;
             uint8_t *uPlane, *vPlane;
             void* imgBuffer = malloc(bufferLen);
-            
+
             memcpy(imgBuffer, frameStorage->GetYMat(), _bufferSizeY);
-            
-            const size_t planeWidth = 360;
-            const size_t planeHeight = 640;
+
+            size_t planeWidth = 360;
+            size_t planeHeight = 640;
             uint8_t *planeBaseAddress = (uint8_t *)frameStorage->GetUVMat();
             size_t planeSize = planeWidth * planeHeight;
 #ifdef __APPLE__
             // Convert Y'UV420sp to Y'UV420p
             uPlane = (uint8_t *)malloc(planeSize);
             vPlane = (uint8_t *)malloc(planeSize);
-            
+
             for (uint32_t i = 0; i < (planeWidth * planeHeight / 4); i++) {
                 uint8_t *uvSrc = &planeBaseAddress[i * 8];
                 uint8_t *uDest = &uPlane[i * 4];
@@ -508,38 +514,38 @@ cv::Mat CRecognitionCore::CaptureView()
             uPlane = planeBaseAddress;
             vPlane = &planeBaseAddress[planeSize];
 #endif
-            
+
             memcpy(((unsigned char *)imgBuffer) + _bufferSizeY, uPlane, planeSize);
             memcpy(((unsigned char *)imgBuffer) + _bufferSizeY + planeSize, vPlane, planeSize);
-            
-            Mat yuv = Mat(1280 + 1280/2, (int)bytesPerRow, CV_8UC1, imgBuffer);
-            
+
+            Mat yuv = Mat(1280 + 1280/2, 720, CV_8UC1, imgBuffer);
+
             Mat rgb;
             cvtColor(yuv, rgb, CV_YUV2RGB_I420);
-            
-            
+
+
             Mat refinedMat = rgb(edgesDetector->GetInternalWindowRect());
-            
+
             vector<ParametricLine> lines = frameStorage->GetEdges();
             frameStorage->NormalizeMatrix(refinedMat, lines, normalizedMat);
-            
+
 #ifdef __APPLE__
             free(uPlane);
             free(vPlane);
 #endif
             free(imgBuffer);
-            
+
             PayCardsRecognizerOrientation orientation = frameStorage->GetYUVOrientation();
-            
+
             if (orientation != PayCardsRecognizerOrientationPortraitUpsideDown &&
                 orientation != PayCardsRecognizerOrientationPortrait) {
-                
+
                 CUtils::RotateMatrix90n(normalizedMat, normalizedMat, 90);
             }
-            
+
             cv::resize(normalizedMat, normalizedMat, cv::Size(660,416));
         }
     }
-    
+
     return normalizedMat;
 }

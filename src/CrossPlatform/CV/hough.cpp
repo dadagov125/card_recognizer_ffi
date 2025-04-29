@@ -41,8 +41,11 @@
 //
 //M*/
 
+//#include "compile.h"
+//#if COMPILE_DMZ
 
 #include "hough.h"
+//#include "opencv2/core/core.hpp"
 
 #define TO_RADIANS(in_degrees) (CV_PI * (in_degrees) / 180.0f)
 #define dmz_likely(x) __builtin_expect(!!(x),1)
@@ -50,6 +53,26 @@
 
 
 LinePolar llcv_hough(const Mat img, Mat dx_mat, Mat dy_mat, float rho, float theta, int threshold, float theta_min, float theta_max, bool vertical, float gradient_angle_threshold) {
+//    CvMat img_stub, *img = (CvMat*)src_image;
+//    img = cvGetMat(img, &img_stub);
+
+//    CvMat dx_stub, *dx_mat = (CvMat*)dx;
+//    dx_mat = cvGetMat(dx_mat, &dx_stub);
+//
+//    CvMat dy_stub, *dy_mat = (CvMat*)dy;
+//    dy_mat = cvGetMat(dy_mat, &dy_stub);
+
+//    if(!CV_IS_MASK_ARR(img)) {
+//      CV_Error(CV_StsBadArg, "The source image must be 8-bit, single-channel");
+//    }
+//
+//    if(rho <= 0 || theta <= 0 || threshold <= 0) {
+//      CV_Error(CV_StsOutOfRange, "rho, theta and threshold must be positive");
+//    }
+//
+//    if(theta_max < theta_min + theta) {
+//      CV_Error(CV_StsBadArg, "theta + theta_min (param1) must be <= theta_max (param2)");
+//    }
 
     cv::AutoBuffer<int> _accum;
     cv::AutoBuffer<int> _tabSin, _tabCos;
@@ -62,6 +85,8 @@ LinePolar llcv_hough(const Mat img, Mat dx_mat, Mat dy_mat, float rho, float the
     int i, j;
     float irho = 1 / rho;
     float scale;
+
+//    CV_Assert( CV_IS_MAT(img) && CV_MAT_TYPE(img->type) == CV_8UC1 );
 
     image = img.data;
     step = (int)img.step;

@@ -306,40 +306,40 @@ bool CNumberRecognizer::ValidateNumber(const shared_ptr<INeuralNetworkResultList
 
 bool CNumberRecognizer::CheckSum(const shared_ptr<INeuralNetworkResultList>& result)
 {
-    vector<int> number = {};
-    
-    for(INeuralNetworkResultList::ResultIterator it=result->Begin(); it != result->End(); ++it)
-    {
-        shared_ptr<INeuralNetworkResult> result = *it;
-        number.push_back(result->GetMaxIndex());
-    }
-    
-    if (number[0] != 5 && number[0] != 4 && number[0] != 2 && number[0] != 9  && number[0] != 6) {
-        return false;
-    }
-    
-    if(number[0] == 2 && number[1] != 2) {
-        return false;
-    }
-    
-    if (number[0] == 5 && (number[1] < 1 || number[1] > 5)) {
-        return false;
-    }
-    
-    int k = 0;
-    if (number.size()%2 == 0) k = 1;
-        
-    int sum = 0;
-    int tmp;
-    
-    for(int i = 0; i < number.size(); i++)
-    {
-        tmp = number[i] * ((i+k)%2 + 1);
-        if(tmp > 9) tmp -= 9;
-            sum += tmp;
-            }
-    
-    if(sum%10 != 0 ) return false;
+//    vector<int> number = {};
+//
+//    for(INeuralNetworkResultList::ResultIterator it=result->Begin(); it != result->End(); ++it)
+//    {
+//        shared_ptr<INeuralNetworkResult> result = *it;
+//        number.push_back(result->GetMaxIndex());
+//    }
+//
+//    if (number[0] != 5 && number[0] != 4 && number[0] != 2) {
+//        return false;
+//    }
+//
+//    if(number[0] == 2 && number[1] != 2) {
+//        return false;
+//    }
+//
+//    if (number[0] == 5 && (number[1] < 1 || number[1] > 5)) {
+//        return false;
+//    }
+//
+//    int k = 0;
+//    if (number.size()%2 == 0) k = 1;
+//
+//    int sum = 0;
+//    int tmp;
+//
+//    for(int i = 0; i < number.size(); i++)
+//    {
+//        tmp = number[i] * ((i+k)%2 + 1);
+//        if(tmp > 9) tmp -= 9;
+//            sum += tmp;
+//            }
+//
+//    if(sum%10 != 0 ) return false;
     
     return true;
 }

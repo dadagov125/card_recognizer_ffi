@@ -1,47 +1,9 @@
-// The source below is a (perhaps modified) copy from OpenCV. OpenCV's license header:
+#ifdef HAVE_NEON_X86
+ #include <NEON_2_SSE.h>
+#else
+ #include <arm_neon.h>
+#endif
 
-/*M///////////////////////////////////////////////////////////////////////////////////////
- //
- //  IMPORTANT: READ BEFORE DOWNLOADING, COPYING, INSTALLING OR USING.
- //
- //  By downloading, copying, installing or using the software you agree to this license.
- //  If you do not agree to this license, do not download, install,
- //  copy or use the software.
- //
- //
- //                        Intel License Agreement
- //                For Open Source Computer Vision Library
- //
- // Copyright (C) 2000, Intel Corporation, all rights reserved.
- // Third party copyrights are property of their respective owners.
- //
- // Redistribution and use in source and binary forms, with or without modification,
- // are permitted provided that the following conditions are met:
- //
- //   * Redistribution's of source code must retain the above copyright notice,
- //     this list of conditions and the following disclaimer.
- //
- //   * Redistribution's in binary form must reproduce the above copyright notice,
- //     this list of conditions and the following disclaimer in the documentation
- //     and/or other materials provided with the distribution.
- //
- //   * The name of Intel Corporation may not be used to endorse or promote products
- //     derived from this software without specific prior written permission.
- //
- // This software is provided by the copyright holders and contributors "as is" and
- // any express or implied warranties, including, but not limited to, the implied
- // warranties of merchantability and fitness for a particular purpose are disclaimed.
- // In no event shall the Intel Corporation or contributors be liable for any direct,
- // indirect, incidental, special, exemplary, or consequential damages
- // (including, but not limited to, procurement of substitute goods or services;
- // loss of use, data, or profits; or business interruption) however caused
- // and on any theory of liability, whether in contract, strict liability,
- // or tort (including negligence or otherwise) arising in any way out of
- // the use of this software, even if advised of the possibility of such damage.
- //
- //M*/
-
-#include <arm_neon.h>
 #include "canny.h"
 
 #define dmz_likely(x) __builtin_expect(!!(x),1)
@@ -314,7 +276,52 @@ void llcv_canny7_precomputed_sobel(Mat src, Mat dst, Mat dx, Mat dy, double low_
     }
 }
 
+//DMZ_INTERNAL void llcv_canny7(IplImage *src, IplImage *dst, double low_thresh, double high_thresh) {
+//  CvSize src_size = cvGetSize(src);
+//
+//  IplImage *sobel_scratch = cvCreateImage(cvSize(src_size.height, src_size.width), IPL_DEPTH_16S, 1);
+//  IplImage *dx = cvCreateImage(src_size, IPL_DEPTH_16S, 1);
+//  IplImage *dy = cvCreateImage(src_size, IPL_DEPTH_16S, 1);
+//  llcv_sobel7(src, dx, sobel_scratch, 1, 0);
+//  llcv_sobel7(src, dy, sobel_scratch, 0, 1);
+//  cvReleaseImage(&sobel_scratch);
+//
+//  llcv_canny7_precomputed_sobel(src, dst, dx, dy, low_thresh, high_thresh);
+//
+//  cvReleaseImage(&dx);
+//  cvReleaseImage(&dy);
+//}
 
+// Calculate sum of abs(image)
+//DMZ_INTERNAL double sum_abs_magnitude_c(IplImage *image) {
+//  IplImage *image_abs = cvCreateImage(cvGetSize(image), image->depth, image->nChannels);
+//  cvAbs(image, image_abs);
+//  CvScalar sum = cvSum(image_abs);
+//  cvReleaseImage(&image_abs);
+//  return sum.val[0];
+//}
+
+//DMZ_INTERNAL double sum_magnitude_c(IplImage *dx, IplImage *dy) {
+//  CvSize src_size = cvGetSize(dx);
+//
+//  // Calculate the gradient magnitude
+//  IplImage *magnitude = cvCreateImage(src_size, IPL_DEPTH_32F, 1);
+//
+//  IplImage *dx_float = cvCreateImage(src_size, IPL_DEPTH_32F, 1);
+//  IplImage *dy_float = cvCreateImage(src_size, IPL_DEPTH_32F, 1);
+//  cvConvertScale(dx, dx_float, 1);
+//  cvConvertScale(dy, dy_float, 1);
+//
+//  cvCartToPolar(dx_float, dy_float, magnitude, NULL, true);
+//
+//  cvReleaseImage(&dx_float);
+//  cvReleaseImage(&dy_float);
+//
+//  CvScalar sum = cvSum(magnitude);
+//
+//  cvReleaseImage(&magnitude);
+//  return sum.val[0];
+//}
 
 double sum_abs_magnitude_neon(Mat image) {
 //#if DMZ_HAS_NEON_COMPILETIME
@@ -335,7 +342,7 @@ double sum_abs_magnitude_neon(Mat image) {
 
   uint16_t vector_cols = vector_chunks * kVectorSize;
 
-  int32x4_t vector_sum = {0, 0, 0, 0};
+  int32x4_t vector_sum = vdupq_n_s32(0);
   int32_t scalar_sum = 0;
 
   for(uint16_t row_index = 0; row_index < image_size.height; row_index++) {
@@ -394,8 +401,8 @@ double sum_magnitude_neon(Mat dx, Mat dy) {
   uint16_t vector_chunks = (uint16_t)(image_size.width / kVectorSize);
 
   uint16_t vector_cols = vector_chunks * kVectorSize;
-  float32x4_t vector_sum = {0.0f, 0.0f, 0.0f, 0.0f};
-  int32x4_t ones = {1, 1, 1, 1};
+  float32x4_t vector_sum = vdupq_n_f32(0.0f);
+  int32x4_t ones = vdupq_n_u32(1);
   float32_t scalar_sum = 0.0f;
   
   for(uint16_t row_index = 0; row_index < image_size.height; row_index++) {
@@ -513,3 +520,4 @@ void llcv_adaptive_canny7_precomputed_sobel(Mat src, Mat dst, Mat dx, Mat dy) {
   llcv_canny7_precomputed_sobel(src, dst, dx, dy, low_threshold, high_threshold);
 }
 
+//#endif

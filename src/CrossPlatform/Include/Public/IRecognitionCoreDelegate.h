@@ -33,5 +33,4 @@ public:
 //    virtual void NameRecognitionDidFinish(vector<pair<cv::Mat,std::string>> result) = 0;
 };
 
-
 #endif /* IRecognitionCoreDelegate_h */
