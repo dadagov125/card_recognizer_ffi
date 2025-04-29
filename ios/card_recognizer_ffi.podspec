@@ -7,8 +7,8 @@ Pod::Spec.new do |s|
   s.version          = '0.0.1'
   s.summary          = 'A new Flutter project.'
   s.description      = <<-DESC
-                        A new Flutter project.
-                       DESC
+                            A new Flutter project.
+                          DESC
   s.homepage         = 'http://example.com'
   s.license          = { :file => '../LICENSE' }
   s.author           = { 'Your Company' => 'email@example.com' }
@@ -28,5 +28,10 @@ Pod::Spec.new do |s|
       'HEADER_SEARCH_PATHS' => '"${PROJECT_DIR}/.."/.symlinks/plugins/card_recognizer_ffi/ios/include/Eigen/ "${PROJECT_DIR}/.."/.symlinks/plugins/card_recognizer_ffi/ios/include/',
       'GCC_PREPROCESSOR_DEFINITIONS' => 'CPU_ONLY USE_EIGEN COMPACT HAVE_PTHREAD'
   }
+
+  s.prepare_command = <<-CMD
+                            mkdir -p Classes/CrossPlatform
+                            cp -r ../src/CrossPlatform/* Classes/CrossPlatform/
+                         CMD
 
 end
