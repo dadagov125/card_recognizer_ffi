@@ -501,14 +501,28 @@ cv::Mat CRecognitionCore::CaptureView()
             uPlane = (uint8_t *)malloc(planeSize);
             vPlane = (uint8_t *)malloc(planeSize);
 
-            for (uint32_t i = 0; i < (planeWidth * planeHeight / 4); i++) {
-                uint8_t *uvSrc = &planeBaseAddress[i * 8];
-                uint8_t *uDest = &uPlane[i * 4];
-                uint8_t *vDest = &vPlane[i * 4];
-                uint8x8x2_t loaded = vld2_u8(uvSrc);
-                vst1_u8(uDest, loaded.val[0]);
-                vst1_u8(vDest, loaded.val[1]);
-            }
+        #ifdef TARGET_OS_SIMULATOR
+                // Альтернативная реализация без NEON для симулятора
+                for (uint32_t i = 0; i < (planeWidth * planeHeight / 4); i++) {
+                    uint8_t *uvSrc = &planeBaseAddress[i * 8];
+                    uint8_t *uDest = &uPlane[i * 4];
+                    uint8_t *vDest = &vPlane[i * 4];
+                    for (int j = 0; j < 4; j++) {
+                        uDest[j] = uvSrc[2 * j];
+                        vDest[j] = uvSrc[2 * j + 1];
+                    }
+                }
+        #else
+                // NEON-оптимизированная реализация
+                for (uint32_t i = 0; i < (planeWidth * planeHeight / 4); i++) {
+                    uint8_t *uvSrc = &planeBaseAddress[i * 8];
+                    uint8_t *uDest = &uPlane[i * 4];
+                    uint8_t *vDest = &vPlane[i * 4];
+                    uint8x8x2_t loaded = vld2_u8(uvSrc);
+                    vst1_u8(uDest, loaded.val[0]);
+                    vst1_u8(vDest, loaded.val[1]);
+                }
+        #endif
 #else
             // Convert YV12 to Y'UV420p
             uPlane = planeBaseAddress;

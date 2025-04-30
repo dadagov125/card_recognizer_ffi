@@ -25,8 +25,8 @@ Pod::Spec.new do |s|
   # Flutter.framework does not contain a i386 slice.
   s.pod_target_xcconfig = {
       'DEFINES_MODULE' => 'YES', 'EXCLUDED_ARCHS[sdk=iphonesimulator*]' => 'i386',
-      'HEADER_SEARCH_PATHS' => '"${PROJECT_DIR}/.."/.symlinks/plugins/card_recognizer_ffi/ios/include/Eigen/ "${PROJECT_DIR}/.."/.symlinks/plugins/card_recognizer_ffi/ios/include/',
-      'GCC_PREPROCESSOR_DEFINITIONS' => 'CPU_ONLY USE_EIGEN COMPACT HAVE_PTHREAD'
+      'HEADER_SEARCH_PATHS' => '"${PROJECT_DIR}/.."/.symlinks/plugins/card_recognizer_ffi/ios/include/Eigen/ "${PROJECT_DIR}/.."/.symlinks/plugins/card_recognizer_ffi/ios/include/opencv2/ "${PROJECT_DIR}/.."/.symlinks/plugins/card_recognizer_ffi/ios/include/',
+      'GCC_PREPROCESSOR_DEFINITIONS' => 'CPU_ONLY USE_EIGEN COMPACT HAVE_PTHREAD HAVE_NEON_X86'
   }
 
   s.prepare_command = <<-CMD
