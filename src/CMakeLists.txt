@@ -18,6 +18,7 @@ add_subdirectory(${ANDROID_CPP_DIR}/crossplatform crossplatform)
 
 add_library(card_recognizer_ffi SHARED
   "card_recognizer_ffi.c"
+  "card_recognizer_c.cpp"
 )
 
 set_target_properties(card_recognizer_ffi PROPERTIES

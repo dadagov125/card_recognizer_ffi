@@ -26,7 +26,9 @@ Pod::Spec.new do |s|
   s.pod_target_xcconfig = {
       'DEFINES_MODULE' => 'YES', 'EXCLUDED_ARCHS[sdk=iphonesimulator*]' => 'i386',
       'HEADER_SEARCH_PATHS' => '"${PROJECT_DIR}/.."/.symlinks/plugins/card_recognizer_ffi/ios/include/Eigen/ "${PROJECT_DIR}/.."/.symlinks/plugins/card_recognizer_ffi/ios/include/opencv2/ "${PROJECT_DIR}/.."/.symlinks/plugins/card_recognizer_ffi/ios/include/',
-      'GCC_PREPROCESSOR_DEFINITIONS' => 'CPU_ONLY USE_EIGEN COMPACT HAVE_PTHREAD HAVE_NEON_X86'
+      'GCC_PREPROCESSOR_DEFINITIONS' => 'CPU_ONLY USE_EIGEN COMPACT HAVE_PTHREAD',
+      'CLANG_CXX_LANGUAGE_STANDARD' => 'c++11',
+      'CLANG_CXX_LIBRARY' => 'libc++'
   }
 
   s.prepare_command = <<-CMD
