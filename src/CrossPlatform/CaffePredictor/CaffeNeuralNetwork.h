@@ -28,7 +28,14 @@ public:
     
     CCaffeNeuralNetwork(const shared_ptr<IServiceContainer>& serviceContainer, const string& name,
                         const string& pathToNetStructure, const string& pathToNetModel, const string& pathToMeanFile = "");
-    
+
+    CCaffeNeuralNetwork(const shared_ptr<IServiceContainer>& serviceContainer,
+                        const string& name,
+                        const unsigned char *netStructure,
+                        unsigned int netStructureSize,
+                        const unsigned char *netModel,
+                        unsigned int netModelSize);
+
     virtual ~CCaffeNeuralNetwork();
     
     virtual const string GetName();

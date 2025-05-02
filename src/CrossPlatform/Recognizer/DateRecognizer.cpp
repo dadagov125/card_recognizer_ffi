@@ -12,6 +12,11 @@
 #include "IRecognitionCoreDelegate.h"
 #include "Utils.h"
 
+#include "DateRecognition/date_recognition_caffemodel.h"
+#include "DateRecognition/date_recognition_prototxt.h"
+
+#include "DateLocalization/cascade_date_xml.h"
+
 static const cv::Rect dateWindowRect(257,282,210,65);
 
 CDateRecognizer::CDateRecognizer(shared_ptr<IServiceContainer> container) : _container(container)
@@ -74,12 +79,23 @@ bool CDateRecognizer::Deploy()
 {
     if(auto factory = _factory.lock()) {
         bool cascadeFlag = false;
-        
+
+
+        std::string xml_data(reinterpret_cast<const char*>(cascade_date_xml), cascade_date_xml_len);
+
+        cv::FileStorage fs(xml_data, cv::FileStorage::READ | cv::FileStorage::MEMORY);
+
         if (_pathDateLocalizationViola.length() > 0) {
-            cascadeFlag =  _dateCascade.load(_pathDateLocalizationViola);
+            cascadeFlag =  _dateCascade.read(fs.getFirstTopLevelNode())
         }
-        
-        _dateRecognitionNeuralNetwork = factory->CreateNeuralNetwork("", _pathDateRecognitionStruct, _pathDateRecognitionModel);
+
+        _dateRecognitionNeuralNetwork = factory->CreateNeuralNetworkFromArray("",
+                                                                              date_recognition_prototxt,
+                                                                              date_recognition_prototxt_len,
+                                                                              date_recognition_caffemodel,
+                                                                              date_recognition_caffemodel_len
+                                                                              );
+
         _dateLocalizationNeuralNetworkL1 = factory->CreateNeuralNetwork("", _pathDateLocalization1Struct, _pathDateLocalization1Model);
         _dateLocalizationNeuralNetworkL0 = factory->CreateNeuralNetwork("", _pathDateLocalization0Struct, _pathDateLocalization0Model);
         

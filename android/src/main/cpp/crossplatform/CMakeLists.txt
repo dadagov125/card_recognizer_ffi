@@ -49,7 +49,8 @@ target_include_directories(crossplatform
         ${CROSS_PLATFORM_DIR}/Include/Recognizer
         ${CROSS_PLATFORM_DIR}/Include/Torch
         ${CROSS_PLATFORM_DIR}/Recognizer
-        ${CROSS_PLATFORM_DIR}/Torch)
+        ${CROSS_PLATFORM_DIR}/Torch
+        ${CROSS_PLATFORM_DIR}/model/include)
 
 if (ANDROID_ABI STREQUAL "armeabi-v7a")
     set_property(TARGET crossplatform APPEND_STRING PROPERTY COMPILE_FLAGS " -mfpu=neon")

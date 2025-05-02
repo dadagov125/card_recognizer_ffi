@@ -23,7 +23,16 @@ public:
     virtual ~CCaffeObjectFactory();
     
     virtual shared_ptr<INeuralNetwork> CreateNeuralNetwork(const string& netName, const string& pathToNetStructure, const string& pathToNetModel, const string& pathToMeanFile = "");
-    
+
+
+    virtual  shared_ptr<INeuralNetwork> CreateNeuralNetworkFromArray(
+            const string& netName,
+            const unsigned char* netStructure,
+            unsigned int netStructureSize,
+            const unsigned char* netModel,
+            unsigned int netModelSize);
+
+
     virtual shared_ptr<INeuralNetworkDatum> CreateNeuralNetworkDatum(const Mat& imageMat, bool needToBeNormalized = true, bool isColor = false,
                                                                             const int height = 0, const int width = 0);
     

@@ -35,6 +35,33 @@ CCaffeNeuralNetwork::CCaffeNeuralNetwork(const shared_ptr<IServiceContainer>& se
     }
 }
 
+CCaffeNeuralNetwork::CCaffeNeuralNetwork(const shared_ptr<IServiceContainer>& serviceContainer,
+                                         const string& name,
+                                         const unsigned char *netStructure,
+                                         unsigned int netStructureSize,
+                                         const unsigned char *netModel,
+                                         unsigned int netModelSize) :
+        _serviceContainer(serviceContainer), _name(name), _isDeployed(false)
+{
+    if(auto serviceContainer = _serviceContainer.lock()) {
+        _objectFactory = serviceContainer->resolve<INeuralNetworkObjectFactory>();
+
+        caffe::NetParameter netparam;
+
+        if (netparam.ParseFromArray(netStructure, netStructureSize)) {
+            // instantiate network with structure
+            _caffeNet = shared_ptr<caffe::Net<float>>(new caffe::Net<float>(netparam));
+
+            // get trained data from binary file
+            caffe::NetParameter netparamData;
+            if (netparamData.ParseFromArray(netModel, netModelSize)) {
+                _caffeNet->CopyTrainedLayersFrom(netparamData);
+                _isDeployed = true;
+            }
+        }
+    }
+}
+
 CCaffeNeuralNetwork::~CCaffeNeuralNetwork() {}
 
 bool CCaffeNeuralNetwork::IsDeployed() const

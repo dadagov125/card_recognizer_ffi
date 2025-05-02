@@ -21,9 +21,9 @@
 #include "CaffeResult.h"
 
 
-CCaffeObjectFactory::CCaffeObjectFactory(const shared_ptr<IServiceContainer>& container) : _serviceContainer(container)
-{
-    if(auto serviceContainer = _serviceContainer.lock()) {
+CCaffeObjectFactory::CCaffeObjectFactory(const shared_ptr<IServiceContainer> &container)
+        : _serviceContainer(container) {
+    if (auto serviceContainer = _serviceContainer.lock()) {
         _objectFactory = serviceContainer->resolve<IObjectFactory>();
     }
 }
@@ -45,6 +45,29 @@ shared_ptr<INeuralNetwork> CCaffeObjectFactory::CreateNeuralNetwork(const string
     
     return neuralNetwork;
 }
+
+shared_ptr<INeuralNetwork> CCaffeObjectFactory::CreateNeuralNetworkFromArray(const string &netName,
+                                                                             const unsigned char *netStructure,
+                                                                             unsigned int netStructureSize,
+                                                                             const unsigned char *netModel,
+                                                                             unsigned int netModelSize) {
+    shared_ptr<INeuralNetwork> neuralNetwork;
+
+    if (auto objectFactory = _objectFactory.lock()) {
+        if (auto serviceContainer = _serviceContainer.lock()) {
+            neuralNetwork = dynamic_pointer_cast<INeuralNetwork>(
+                    objectFactory->CreateObject<CCaffeNeuralNetwork>(serviceContainer,
+                                                                     netName,
+                                                                     netStructure,
+                                                                     netStructureSize,
+                                                                     netModel,
+                                                                     netModelSize));
+        }
+    }
+
+    return neuralNetwork;
+}
+
 
 shared_ptr<INeuralNetworkDatum> CCaffeObjectFactory::CreateNeuralNetworkDatum(const Mat& imageMat,
                                                                               bool needToBeNormalized, bool isColor/* = false*/,
@@ -78,8 +101,7 @@ shared_ptr<INeuralNetworkResult> CCaffeObjectFactory::CreateNeuralNetworkResult(
     return result;
 }
 
-shared_ptr<INeuralNetworkResultList> CCaffeObjectFactory::CreateNeuralNetworkResultList()
-{
+shared_ptr<INeuralNetworkResultList> CCaffeObjectFactory::CreateNeuralNetworkResultList() {
     shared_ptr<INeuralNetworkResultList> resultList;
     if(auto objectFactory = _objectFactory.lock()) {
         resultList = dynamic_pointer_cast<INeuralNetworkResultList>(objectFactory->CreateObject<CCaffeResultList>());
