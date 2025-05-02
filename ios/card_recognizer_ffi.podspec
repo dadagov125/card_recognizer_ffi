@@ -20,12 +20,13 @@ Pod::Spec.new do |s|
   s.vendored_libraries = 'Libraries/libopencv_core.a',
                           'Libraries/libopencv_hal.a',
                           'Libraries/libopencv_imgproc.a',
-                          'Libraries/libopencv_objdetect.a'
+                          'Libraries/libopencv_objdetect.a',
+                           'Libraries/libyuv-universal.a'
   s.platform = :ios, '12.0'
   # Flutter.framework does not contain a i386 slice.
   s.pod_target_xcconfig = {
       'DEFINES_MODULE' => 'YES', 'EXCLUDED_ARCHS[sdk=iphonesimulator*]' => 'i386',
-      'HEADER_SEARCH_PATHS' => '"${PROJECT_DIR}/.."/.symlinks/plugins/card_recognizer_ffi/ios/include/Eigen/ "${PROJECT_DIR}/.."/.symlinks/plugins/card_recognizer_ffi/ios/include/opencv2/ "${PROJECT_DIR}/.."/.symlinks/plugins/card_recognizer_ffi/ios/include/',
+      'HEADER_SEARCH_PATHS' => '"${PROJECT_DIR}/.."/.symlinks/plugins/card_recognizer_ffi/ios/include/Eigen/ "${PROJECT_DIR}/.."/.symlinks/plugins/card_recognizer_ffi/ios/include/opencv2/ "${PROJECT_DIR}/.."/.symlinks/plugins/card_recognizer_ffi/ios/include/libyuv/include/ "${PROJECT_DIR}/.."/.symlinks/plugins/card_recognizer_ffi/ios/include/',
       'GCC_PREPROCESSOR_DEFINITIONS' => 'CPU_ONLY USE_EIGEN COMPACT HAVE_PTHREAD',
       'CLANG_CXX_LANGUAGE_STANDARD' => 'c++11',
       'CLANG_CXX_LIBRARY' => 'libc++'
