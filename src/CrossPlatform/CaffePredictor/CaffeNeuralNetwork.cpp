@@ -48,7 +48,9 @@ CCaffeNeuralNetwork::CCaffeNeuralNetwork(const shared_ptr<IServiceContainer>& se
 
         caffe::NetParameter netparam;
 
-        if (netparam.ParseFromArray(netStructure, netStructureSize)) {
+        std::string text(reinterpret_cast<const char*>(netStructure), netStructureSize);
+
+        if (ReadProtoFromString(text, &netparam)) {
             // instantiate network with structure
             _caffeNet = shared_ptr<caffe::Net<float>>(new caffe::Net<float>(netparam));
 
