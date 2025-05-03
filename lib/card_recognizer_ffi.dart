@@ -13,7 +13,7 @@ import 'card_recognizer_ffi_bindings_generated.dart';
 /// only do this for native functions which are guaranteed to be short-lived.
 int sum(int a, int b) => _bindings.sum(a, b);
 
-int nativeInit(){
+WorkRect nativeInit(){
   return _bindings.nativeInit();
 }
 /// A longer lived native function, which occupies the thread calling it.

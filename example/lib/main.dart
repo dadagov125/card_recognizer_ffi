@@ -29,6 +29,8 @@ class _MyAppState extends State<MyApp> {
   Widget build(BuildContext context) {
     const textStyle = TextStyle(fontSize: 25);
     const spacerSmall = SizedBox(height: 10);
+    var nativeInit = card_recognizer_ffi.nativeInit();
+    print('RESULT>>>>>>>   ${nativeInit}');
     return MaterialApp(
       home: Scaffold(
         appBar: AppBar(

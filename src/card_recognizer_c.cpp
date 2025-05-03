@@ -8,21 +8,19 @@
 #include "CrossPlatform/Include/Public/ITorchDelegate.h"
 #include "CrossPlatform/Include/Public/Enums.h"
 #include "CrossPlatform/Recognizer/RecognitionCore.h"
-
-
-
-
-
+#include "card_recognizer_ffi.h"
 
 // Заглушка для IRecognitionCoreDelegate
 class RecognitionCoreDelegateStub : public IRecognitionCoreDelegate {
 public:
-    static bool GetInstance(std::shared_ptr<IRecognitionCoreDelegate>& recognitionDelegate, void* platformDelegate = nullptr, void* recognizer = nullptr) {
+    static bool GetInstance(std::shared_ptr <IRecognitionCoreDelegate> &recognitionDelegate,
+                            void *platformDelegate = nullptr, void *recognizer = nullptr) {
         recognitionDelegate = std::make_shared<RecognitionCoreDelegateStub>();
         return true;
     }
 
-    void RecognitionDidFinish(const std::shared_ptr<IRecognitionResult>& result, PayCardsRecognizerMode resultFlags) override {
+    void RecognitionDidFinish(const std::shared_ptr <IRecognitionResult> &result,
+                              PayCardsRecognizerMode resultFlags) override {
         std::cout << "Stub: RecognitionDidFinish called" << std::endl;
     }
 
@@ -34,7 +32,8 @@ public:
 // Заглушка для ITorchDelegate
 class TorchDelegateStub : public ITorchDelegate {
 public:
-    static bool GetInstance(std::shared_ptr<ITorchDelegate>& torchDelegate, void* platformDelegate = nullptr) {
+    static bool
+    GetInstance(std::shared_ptr <ITorchDelegate> &torchDelegate, void *platformDelegate = nullptr) {
         torchDelegate = std::make_shared<TorchDelegateStub>();
         return true;
     }
@@ -45,29 +44,35 @@ public:
 };
 
 extern "C" {
-    static std::shared_ptr<IRecognitionCore> recognitionCore = nullptr;
+static std::shared_ptr <IRecognitionCore> recognitionCore = nullptr;
 
-    unsigned long long nativeInit(){
-
-
-        std::shared_ptr<IRecognitionCoreDelegate> recognitionDelegate;
-        RecognitionCoreDelegateStub::GetInstance(recognitionDelegate);
-
-        std::shared_ptr<ITorchDelegate> torchDelegate;
-        TorchDelegateStub::GetInstance(torchDelegate);
+struct WorkRect nativeInit() {
 
 
-        IRecognitionCore::GetInstance(recognitionCore, recognitionDelegate, torchDelegate);
+    std::shared_ptr <IRecognitionCoreDelegate> recognitionDelegate;
+    RecognitionCoreDelegateStub::GetInstance(recognitionDelegate);
 
-        std::cout << "Instances created successfully" << std::endl;
+    std::shared_ptr <ITorchDelegate> torchDelegate;
+    TorchDelegateStub::GetInstance(torchDelegate);
 
 
-        recognitionCore->SetRecognitionMode(PayCardsRecognizerModeNumber);
+    IRecognitionCore::GetInstance(recognitionCore, recognitionDelegate, torchDelegate);
 
-        recognitionCore->Deploy();
 
-        return static_cast<unsigned long long>(reinterpret_cast<intptr_t>(recognitionCore.get()));
+    recognitionCore->SetRecognitionMode(
+            static_cast<PayCardsRecognizerMode>(
+                    PayCardsRecognizerModeNumber | PayCardsRecognizerModeDate |
+                    PayCardsRecognizerModeName
+            )
+    );
 
-    }
+    recognitionCore->Deploy();
+    recognitionCore->SetOrientation(PayCardsRecognizerOrientationPortrait);
+    cv::Rect rect = recognitionCore->CalcWorkingArea(cv::Size(1280, 720), 32);
 
+    WorkRect workRect{rect.x, rect.y, rect.width, rect.height};
+    return workRect;
+
+
+}
 }

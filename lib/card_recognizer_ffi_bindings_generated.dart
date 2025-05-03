@@ -57,12 +57,30 @@ class CardRecognizerFfiBindings {
   late final _sum_long_running =
       _sum_long_runningPtr.asFunction<int Function(int, int)>();
 
-  int nativeInit() {
+  WorkRect nativeInit() {
     return _nativeInit();
   }
 
   late final _nativeInitPtr =
-      _lookup<ffi.NativeFunction<ffi.UnsignedLongLong Function()>>(
-          'nativeInit');
-  late final _nativeInit = _nativeInitPtr.asFunction<int Function()>();
+      _lookup<ffi.NativeFunction<WorkRect Function()>>('nativeInit');
+  late final _nativeInit = _nativeInitPtr.asFunction<WorkRect Function()>();
+}
+
+final class WorkRect extends ffi.Struct {
+  @ffi.Int()
+  external int x;
+
+  @ffi.Int()
+  external int y;
+
+  @ffi.Int()
+  external int width;
+
+  @ffi.Int()
+  external int height;
+
+  @override
+  String toString() {
+    return 'WorkRect{x: $x, y: $y, width: $width, height: $height}';
+  }
 }

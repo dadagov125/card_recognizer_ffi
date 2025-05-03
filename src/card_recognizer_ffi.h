@@ -16,7 +16,12 @@
 #define FFI_PLUGIN_EXPORT
 #endif
 
-
+struct WorkRect{
+    int x;
+    int y;
+    int width;
+    int height;
+};
 
 FFI_PLUGIN_EXPORT int sum(int a, int b);
 
@@ -26,7 +31,7 @@ FFI_PLUGIN_EXPORT int sum_long_running(int a, int b);
 extern "C" {
 #endif
 
-FFI_PLUGIN_EXPORT unsigned long long nativeInit();
+FFI_PLUGIN_EXPORT struct WorkRect nativeInit();
 
 #ifdef __cplusplus
 }
