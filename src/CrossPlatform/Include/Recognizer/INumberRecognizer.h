@@ -29,15 +29,7 @@ public:
     virtual bool Deploy() = 0;
     
     virtual void SetRecognitionMode(PayCardsRecognizerMode flag) = 0;
-    
-    virtual void SetPathNumberRecognitionModel(const string& path) = 0;
-    virtual void SetPathNumberRecognitionStruct(const string& path) = 0;
-    
-    virtual void SetPathNumberLocalizationXModel(const string& path) = 0;
-    virtual void SetPathNumberLocalizationXStruct(const string& path) = 0;
-    
-    virtual void SetPathNumberLocalizationYModel(const string& path) = 0;
-    virtual void SetPathNumberLocalizationYStruct(const string& path) = 0;
+
     virtual void SetDelegate(const shared_ptr<IRecognitionCoreDelegate>& delegate) = 0;
 
 };

@@ -31,16 +31,7 @@ public:
     virtual bool Deploy();
 
     virtual void SetRecognitionMode(PayCardsRecognizerMode flag);
-    
-    virtual void SetPathNumberRecognitionModel(const string& path);
-    virtual void SetPathNumberRecognitionStruct(const string& path);
-    
-    virtual void SetPathNumberLocalizationXModel(const string& path);
-    virtual void SetPathNumberLocalizationXStruct(const string& path);
-    
-    virtual void SetPathNumberLocalizationYModel(const string& path);
-    virtual void SetPathNumberLocalizationYStruct(const string& path);
-    
+
     virtual void SetDelegate(const shared_ptr<IRecognitionCoreDelegate>& delegate);
 
 private:
@@ -76,13 +67,7 @@ private:
     shared_ptr<INeuralNetwork> _localizationNeuralNetworkX;
     
     shared_ptr<INeuralNetwork> _recognitionNeuralNetwork;
-    
-    string _pathNumberRecognitionModel;
-    string _pathNumberRecognitionStruct;
-    string _pathNumberLocalizationXModel;
-    string _pathNumberLocalizationXStruct;
-    string _pathNumberLocalizationYModel;
-    string _pathNumberLocalizationYStruct;
+
     
     PayCardsRecognizerMode _mode;
 };

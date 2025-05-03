@@ -37,16 +37,7 @@ public:
     virtual void SetRecognitionMode(PayCardsRecognizerMode flag);
     
     virtual void SetDelegate(const shared_ptr<IRecognitionCoreDelegate>& delegate);
-    
-    virtual void SetPathNameYLocalizationViola(const string& path);
-    
-    virtual void SetPathNameLocalizationXModel(const string& path);
-    virtual void SetPathNameLocalizationXStruct(const string& path);
-    
-    virtual void SetPathNameSpaceCharModel(const string& path);
-    virtual void SetPathNameSpaceCharStruct(const string& path);
-    
-    virtual void SetPathNameListTxt(const string& path);
+
     
 private:
     
@@ -58,20 +49,13 @@ private:
     weak_ptr<IServiceContainer> _container;
     weak_ptr<IRecognitionCoreDelegate> _delegate;
     weak_ptr<INeuralNetworkObjectFactory> _factory;
-    
-    string _pathNameYLocalizationViola;
-    
+
     cv::CascadeClassifier _yCascade;
     
     shared_ptr<INeuralNetwork> _localizationXNeuralNetwork;
     shared_ptr<INeuralNetwork> _spaceCharNeuralNetwork;
     
-    string _pathNameLocalizationXModel;
-    string _pathNameLocalizationXStruct;
-    
-    string _pathNameSpaceCharModel;
-    string _pathNameSpaceCharStruct;
-    string _pathNameDictPath;
+
     std::istringstream _namesDict;
     
     PayCardsRecognizerMode _mode;

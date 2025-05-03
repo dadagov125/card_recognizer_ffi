@@ -29,17 +29,7 @@ public:
     virtual bool Deploy();
 
     virtual void SetRecognitionMode(PayCardsRecognizerMode flag);
-    
-    virtual void SetPathDateRecognitionModel(const string& path);
-    virtual void SetPathDateRecognitionStruct(const string& path);
-    
-    virtual void SetPathDateLocalization0Model(const string& path);
-    virtual void SetPathDateLocalization0Struct(const string& path);
-    
-    virtual void SetPathDateLocalization1Model(const string& path);
-    virtual void SetPathDateLocalization1Struct(const string& path);
-    
-    virtual void SetPathDateLocalizationViola(const string& path);
+
     
     virtual void SetDelegate(const shared_ptr<IRecognitionCoreDelegate>& delegate);
 
@@ -69,13 +59,7 @@ private:
     
     cv::CascadeClassifier _dateCascade;
     
-    string _pathDateRecognitionModel;
-    string _pathDateRecognitionStruct;
-    string _pathDateLocalization0Model;
-    string _pathDateLocalization0Struct;
-    string _pathDateLocalization1Model;
-    string _pathDateLocalization1Struct;
-    string _pathDateLocalizationViola;
+
     
     PayCardsRecognizerMode _mode;
 };

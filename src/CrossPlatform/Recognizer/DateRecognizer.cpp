@@ -46,41 +46,6 @@ void CDateRecognizer::SetDelegate(const shared_ptr<IRecognitionCoreDelegate>& de
     _delegate = delegate;
 }
 
-void CDateRecognizer::SetPathDateRecognitionModel(const string& path)
-{
-    _pathDateRecognitionModel = path;
-}
-
-void CDateRecognizer::SetPathDateRecognitionStruct(const string& path)
-{
-    _pathDateRecognitionStruct = path;
-}
-
-void CDateRecognizer::SetPathDateLocalization0Model(const string& path)
-{
-    _pathDateLocalization0Model = path;
-}
-
-void CDateRecognizer::SetPathDateLocalization0Struct(const string& path)
-{
-    _pathDateLocalization0Struct = path;
-}
-
-void CDateRecognizer::SetPathDateLocalization1Model(const string& path)
-{
-    _pathDateLocalization1Model = path;
-}
-
-void CDateRecognizer::SetPathDateLocalization1Struct(const string& path)
-{
-    _pathDateLocalization1Struct = path;
-}
-
-void CDateRecognizer::SetPathDateLocalizationViola(const string& path)
-{
-    _pathDateLocalizationViola = path;
-}
-
 bool CDateRecognizer::Deploy()
 {
     if(auto factory = _factory.lock()) {

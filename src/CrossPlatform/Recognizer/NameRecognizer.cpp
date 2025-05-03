@@ -51,39 +51,9 @@ void CNameRecognizer::SetRecognitionMode(PayCardsRecognizerMode flag)
     _mode = flag;
 }
 
-void CNameRecognizer::SetPathNameLocalizationXModel(const string& path)
-{
-    _pathNameLocalizationXModel = path;
-}
-
-void CNameRecognizer::SetPathNameLocalizationXStruct(const string& path)
-{
-    _pathNameLocalizationXStruct = path;
-}
-
 void CNameRecognizer::SetDelegate(const shared_ptr<IRecognitionCoreDelegate>& delegate)
 {
     _delegate = delegate;
-}
-
-void CNameRecognizer::SetPathNameYLocalizationViola(const string& path)
-{
-    _pathNameYLocalizationViola = path;
-}
-
-void CNameRecognizer::SetPathNameSpaceCharModel(const string& path)
-{
-    _pathNameSpaceCharModel = path;
-}
-
-void CNameRecognizer::SetPathNameSpaceCharStruct(const string& path)
-{
-    _pathNameSpaceCharStruct = path;
-}
-
-void CNameRecognizer::SetPathNameListTxt(const string& path)
-{
-    _pathNameDictPath = path;
 }
 
 bool CNameRecognizer::Deploy()

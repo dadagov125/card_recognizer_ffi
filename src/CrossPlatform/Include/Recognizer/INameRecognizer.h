@@ -31,16 +31,7 @@ public:
     virtual void SetRecognitionMode(PayCardsRecognizerMode flag) = 0;
     
     virtual void SetDelegate(const shared_ptr<IRecognitionCoreDelegate>& delegate) = 0;
-    
-    virtual void SetPathNameYLocalizationViola(const string& path) = 0;
-    
-    virtual void SetPathNameLocalizationXModel(const string& path) = 0;
-    virtual void SetPathNameLocalizationXStruct(const string& path) = 0;
-    
-    virtual void SetPathNameSpaceCharModel(const string& path) = 0;
-    virtual void SetPathNameSpaceCharStruct(const string& path) = 0;
-    
-    virtual void SetPathNameListTxt(const string& path) = 0;
+
 
 };
 

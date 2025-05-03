@@ -41,36 +41,6 @@ public:
     
     virtual void Deploy();
     
-    virtual void SetPathNumberRecognitionModel(const string& path);
-    virtual void SetPathNumberRecognitionStruct(const string& path);
-    
-    virtual void SetPathNumberLocalizationXModel(const string& path);
-    virtual void SetPathNumberLocalizationXStruct(const string& path);
-    
-    virtual void SetPathNumberLocalizationYModel(const string& path);
-    virtual void SetPathNumberLocalizationYStruct(const string& path);
-    
-    virtual void SetPathDateRecognitionModel(const string& path);
-    virtual void SetPathDateRecognitionStruct(const string& path);
-    
-    virtual void SetPathDateLocalization0Model(const string& path);
-    virtual void SetPathDateLocalization0Struct(const string& path);
-    
-    virtual void SetPathDateLocalization1Model(const string& path);
-    virtual void SetPathDateLocalization1Struct(const string& path);
-    
-    virtual void SetPathDateLocalizationViola(const string& path);
-    
-    virtual void SetPathNameYLocalizationViola(const string& path);
-    
-    virtual void SetPathNameLocalizationXModel(const string& path);
-    virtual void SetPathNameLocalizationXStruct(const string& path);
-
-    virtual void SetPathNameSpaceCharModel(const string& path);
-    virtual void SetPathNameSpaceCharStruct(const string& path);
-    
-    virtual void SetPathNameListTxt(const string& path);
-    
     virtual void SetOrientation(PayCardsRecognizerOrientation orientation);
     
     virtual bool IsIdle() const;

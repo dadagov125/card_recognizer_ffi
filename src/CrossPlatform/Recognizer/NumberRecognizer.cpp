@@ -58,36 +58,6 @@ void CNumberRecognizer::SetDelegate(const shared_ptr<IRecognitionCoreDelegate>& 
     _delegate = delegate;
 }
 
-void CNumberRecognizer::SetPathNumberRecognitionModel(const string& path)
-{
-    _pathNumberRecognitionModel = path;
-}
-
-void CNumberRecognizer::SetPathNumberRecognitionStruct(const string& path)
-{
-    _pathNumberRecognitionStruct = path;
-}
-
-void CNumberRecognizer::SetPathNumberLocalizationXModel(const string& path)
-{
-    _pathNumberLocalizationXModel = path;
-}
-
-void CNumberRecognizer::SetPathNumberLocalizationXStruct(const string& path)
-{
-    _pathNumberLocalizationXStruct = path;
-}
-
-void CNumberRecognizer::SetPathNumberLocalizationYModel(const string& path)
-{
-    _pathNumberLocalizationYModel = path;
-}
-
-void CNumberRecognizer::SetPathNumberLocalizationYStruct(const string& path)
-{
-    _pathNumberLocalizationYStruct = path;
-}
-
 bool CNumberRecognizer::Deploy()
 {
     if(auto factory = _factory.lock()) {
