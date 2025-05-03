@@ -17,6 +17,12 @@
 
 #include "DateLocalization/cascade_date_xml.h"
 
+#include "DateLocalization/date_localization_l1_caffemodel.h"
+#include "DateLocalization/date_localization_l1_prototxt.h"
+
+#include "DateLocalization/date_localization_l0_caffemodel.h"
+#include "Datelocalization/date_localization_l0_prototxt.h"
+
 static const cv::Rect dateWindowRect(257,282,210,65);
 
 CDateRecognizer::CDateRecognizer(shared_ptr<IServiceContainer> container) : _container(container)
@@ -85,21 +91,33 @@ bool CDateRecognizer::Deploy()
 
         cv::FileStorage fs(xml_data, cv::FileStorage::READ | cv::FileStorage::MEMORY);
 
-        //if (_pathDateLocalizationViola.length() > 0) {
-            cascadeFlag =  _dateCascade.read(fs.getFirstTopLevelNode());
-        //}
+        if (fs.isOpened()) {
+            auto node = fs.getFirstTopLevelNode();
+            if(!node.empty()){
+                cascadeFlag =  _dateCascade.read(node);
+            }
+        }
 
         _dateRecognitionNeuralNetwork = factory->CreateNeuralNetworkFromArray("",
                                                                               date_recognition_prototxt,
                                                                               date_recognition_prototxt_len,
                                                                               date_recognition_caffemodel,
-                                                                              date_recognition_caffemodel_len
-                                                                              );
+                                                                              date_recognition_caffemodel_len);
 
-        _dateLocalizationNeuralNetworkL1 = factory->CreateNeuralNetwork("", _pathDateLocalization1Struct, _pathDateLocalization1Model);
-        _dateLocalizationNeuralNetworkL0 = factory->CreateNeuralNetwork("", _pathDateLocalization0Struct, _pathDateLocalization0Model);
 
-        return _dateRecognitionNeuralNetwork->IsDeployed() && _dateLocalizationNeuralNetworkL1->IsDeployed() && _dateLocalizationNeuralNetworkL0->IsDeployed() && cascadeFlag && _pathDateLocalizationViola.length() > 0;
+        _dateLocalizationNeuralNetworkL1 = factory->CreateNeuralNetworkFromArray("",
+                                                                                 date_localization_l1_prototxt,
+                                                                                 date_localization_l1_prototxt_len,
+                                                                                 date_localization_l1_caffemodel,
+                                                                                 date_localization_l1_caffemodel_len);
+
+        _dateLocalizationNeuralNetworkL0 = factory->CreateNeuralNetworkFromArray("",
+                                                                                 date_localization_l0_prototxt,
+                                                                                 date_localization_l0_prototxt_len,
+                                                                                 date_localization_l0_caffemodel,
+                                                                                 date_localization_l0_caffemodel_len);
+
+        return _dateRecognitionNeuralNetwork->IsDeployed() && _dateLocalizationNeuralNetworkL1->IsDeployed() && _dateLocalizationNeuralNetworkL0->IsDeployed() && cascadeFlag;
     }
 
     return false;
