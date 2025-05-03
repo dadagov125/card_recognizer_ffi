@@ -13,6 +13,15 @@
 #include "IRecognitionCoreDelegate.h"
 #include "Utils.h"
 
+#include "NumberRecognition/number_recognition_caffemodel.h"
+#include "NumberRecognition/number_recognition_prototxt.h"
+
+#include "NumberLocalization/loc_y_caffemodel.h"
+#include "NumberLocalization/loc_y_prototxt.h"
+
+#include "NumberLocalization/loc_x_caffemodel.h"
+#include "NumberLocalization/loc_x_prototxt.h"
+
 static const cv::Rect dateWindowRect(257,282,210,65);
 static const cv::Rect numberWindowRect(54,221,552,60);
 
@@ -82,14 +91,30 @@ void CNumberRecognizer::SetPathNumberLocalizationYStruct(const string& path)
 bool CNumberRecognizer::Deploy()
 {
     if(auto factory = _factory.lock()) {
-        _recognitionNeuralNetwork = factory->CreateNeuralNetwork("", _pathNumberRecognitionStruct, _pathNumberRecognitionModel);
+        _recognitionNeuralNetwork = factory->CreateNeuralNetworkFromArray("",
+                                                                          number_recognition_prototxt,
+                                                                          number_recognition_prototxt_len,
+                                                                          number_recognition_caffemodel,
+                                                                          number_recognition_caffemodel_len);
+
         
-        _localizationNeuralNetworkY = factory->CreateNeuralNetwork("", _pathNumberLocalizationYStruct, _pathNumberLocalizationYModel);
+        _localizationNeuralNetworkY = factory->CreateNeuralNetworkFromArray("",
+                                                                            loc_y_prototxt,
+                                                                            loc_y_prototxt_len,
+                                                                            loc_y_caffemodel,
+                                                                            loc_y_caffemodel_len);
+
         
-        _localizationNeuralNetworkX = factory->CreateNeuralNetwork("", _pathNumberLocalizationXStruct, _pathNumberLocalizationXModel);
+        _localizationNeuralNetworkX =  factory->CreateNeuralNetworkFromArray("",
+                                                                             loc_x_prototxt,
+                                                                             loc_x_prototxt_len,
+                                                                             loc_x_caffemodel,
+                                                                             loc_x_caffemodel_len);
+
         
         return _localizationNeuralNetworkY->IsDeployed() &&
-                _localizationNeuralNetworkX->IsDeployed() && _recognitionNeuralNetwork->IsDeployed();
+                _localizationNeuralNetworkX->IsDeployed() &&
+                _recognitionNeuralNetwork->IsDeployed();
     }
     
     return false;
