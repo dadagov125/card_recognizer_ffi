@@ -15,6 +15,16 @@
 #include <iterator>
 #include <sstream>
 
+#include "NameLocalization/cascade_name_xml.h"
+
+#include "NameLocalization/name_localization_x_prototxt.h"
+#include "NameLocalization/name_localization_x_caffemodel.h"
+
+#include "NameRecognition/name_space_char_recognition_prototxt.h"
+#include "NameRecognition/name_space_char_recognition_caffemodel.h"
+
+#include "NameRecognition/names_txt.h"
+
 using namespace std;
 using namespace cv;
 
@@ -81,25 +91,38 @@ bool CNameRecognizer::Deploy()
     if(auto factory = _factory.lock()) {
     
         bool cascadeFlag = false;
-        
-        if (_pathNameYLocalizationViola.length() > 0) {
-            cascadeFlag = _yCascade.load(_pathNameYLocalizationViola);
+
+        std::string xml_data(reinterpret_cast<const char*>(cascade_name_xml), cascade_name_xml_len);
+
+        cv::FileStorage fs(xml_data, cv::FileStorage::READ | cv::FileStorage::MEMORY);
+
+        if (fs.isOpened()) {
+            auto node = fs.getFirstTopLevelNode();
+            if(!node.empty()){
+                cascadeFlag =  _yCascade.read(node);
+            }
         }
+
+        _localizationXNeuralNetwork = factory->CreateNeuralNetworkFromArray("",
+                                                                            name_localization_x_prototxt,
+                                                                            name_localization_x_prototxt_len,
+                                                                            name_localization_x_caffemodel,
+                                                                            name_localization_x_caffemodel_len);
+
+        _spaceCharNeuralNetwork = factory->CreateNeuralNetworkFromArray("",
+                                                                        name_space_char_recognition_prototxt,
+                                                                        name_space_char_recognition_prototxt_len,
+                                                                        name_space_char_recognition_caffemodel,
+                                                                        name_space_char_recognition_caffemodel_len);
+
         
-        _localizationXNeuralNetwork = factory->CreateNeuralNetwork("", _pathNameLocalizationXStruct, _pathNameLocalizationXModel);
-        
-        _spaceCharNeuralNetwork = factory->CreateNeuralNetwork("", _pathNameSpaceCharStruct, _pathNameSpaceCharModel);
-        
-        if (_pathNameDictPath.length() > 0) {
-            
-            std::ifstream namesDict(_pathNameDictPath);
-            string fileContents { istreambuf_iterator<char>(namesDict), istreambuf_iterator<char>() };
-            
+        if (names_txt_len > 0) {
+            std::string fileContents(reinterpret_cast<const char*>(names_txt), names_txt_len);
             _namesDict.str(fileContents);
         }
         
         return _localizationXNeuralNetwork->IsDeployed() &&
-                _spaceCharNeuralNetwork->IsDeployed() && cascadeFlag && _pathNameDictPath.length() > 0;
+                _spaceCharNeuralNetwork->IsDeployed() && cascadeFlag && names_txt_len > 0;
     }
     
     return false;
